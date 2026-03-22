@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark" data-lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>নূরুল হিকমাহ · Noor Al-Hikma</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Amiri:ital,wght@0,400;0,700;1,400&family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+</head>
+<body>
+
+<!-- BACKGROUND -->
+<canvas id="bgCanvas"></canvas>
+<div class="pattern-overlay"></div>
+<div class="grain-overlay"></div>
+<div class="orb orb-1"></div><div class="orb orb-2"></div><div class="orb orb-3"></div>
+<div class="orb orb-4"></div><div class="orb orb-5"></div>
+<div class="lb lb1"></div><div class="lb lb2"></div><div class="lb lb3"></div>
+
+<!-- UTILITY BAR -->
+<div class="util-bar">
+  <div class="ub-left">
+    <span class="ub-hijri" id="hijriDate">☽ Loading…</span>
+    <span class="ub-prayer" id="prayerNext">🕌 Loading prayer…</span>
+  </div>
+  <div class="ub-right">
+    <div class="lang-toggle">
+      <button class="lt-btn active" data-lang="en" onclick="setLang('en')">EN</button>
+      <button class="lt-btn" data-lang="bn" onclick="setLang('bn')">বাং</button>
+      <button class="lt-btn" data-lang="ar" onclick="setLang('ar')">عر</button>
+    </div>
+    <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="Toggle Light/Dark">
+      <span id="themeIcon">🌙</span>
+      <div class="tb-track"><div class="tb-thumb"></div></div>
+    </button>
+    <button class="ub-btn" onclick="openSearch()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    </button>
+    <button class="ub-btn admin-btn" onclick="openAdminGate()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      <span data-i18n="admin">Admin</span>
+    </button>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header class="site-header glass-header">
+  <div class="header-wrap">
+    <div class="logo-area">
+      <div class="logo-emblem">
+        <svg class="emb-svg" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="40" cy="40" r="37" fill="none" stroke="url(#eg)" stroke-width="0.8" stroke-dasharray="3 4" class="emb-r1"/>
+          <circle cx="40" cy="40" r="28" fill="none" stroke="url(#eg)" stroke-width="0.5" class="emb-r2"/>
+          <polygon points="40,8 47,30 70,30 51,46 58,68 40,53 22,68 29,46 10,30 33,30" fill="none" stroke="url(#eg)" stroke-width="0.7" class="emb-star"/>
+          <defs><linearGradient id="eg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#c9a84c"/><stop offset="50%" stop-color="#f0d080"/><stop offset="100%" stop-color="#c9a84c"/></linearGradient></defs>
+        </svg>
+        <span class="emb-moon">☽</span>
+      </div>
+      <div class="logo-texts">
+        <span class="logo-en" data-i18n="siteTitle">Noor Al-Hikma</span>
+        <span class="logo-ar">نور الحكمة</span>
+        <span class="logo-sub" data-i18n="siteSub">Islamic Literary Archive</span>
+      </div>
+    </div>
+    <div class="ticker-area">
+      <span class="bismillah">﷽</span>
+      <div class="ticker-box">
+        <div class="ticker-scroll" id="ticker"></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-verse glass-card" id="heroCard">
+    <div class="hv-ornament">
+      <span class="hv-line"></span><span class="hv-star">✦</span><span class="hv-line"></span>
+    </div>
+    <div class="hv-arabic" id="hArabic">إِنَّ مَعَ الْعُسْرِ يُسْرًا</div>
+    <div class="hv-trans" id="hTrans">"Indeed, with hardship will be ease."</div>
+    <div class="hv-ref" id="hRef">— Al-Inshirah 94:6</div>
+    <div class="hv-ornament bottom">
+      <span class="hv-line"></span><span class="hv-star">✦</span><span class="hv-line"></span>
+    </div>
+    <div class="hv-controls">
+      <button class="hvc-btn" onclick="prevVerse()">‹</button>
+      <div class="hv-dots" id="hvDots"></div>
+      <button class="hvc-btn" onclick="nextVerse()">›</button>
+    </div>
+  </div>
+
+  <div class="hero-side">
+    <!-- Prayer Times -->
+    <div class="hw glass-card prayer-hw" id="prayerCard">
+      <div class="hw-head"><span>🕌</span><span data-i18n="prayerTimes">Prayer Times</span><span class="hw-loc" id="hwLoc">Dhaka, BD</span></div>
+      <div class="pt-grid" id="ptGrid"><div class="pt-loading">Detecting location…</div></div>
+    </div>
+    <!-- Hijri + Stats -->
+    <div class="hw-row">
+      <div class="hw glass-card hijri-hw">
+        <div class="hw-head"><span>📅</span><span data-i18n="islamicDate">Islamic Date</span></div>
+        <div class="hijri-big" id="hijriBig">—</div>
+        <div class="hijri-greg" id="hijriGreg">—</div>
+      </div>
+      <div class="hw glass-card stats-hw">
+        <div class="hw-head"><span>✦</span><span data-i18n="archive">Archive</span></div>
+        <div class="sw-pills">
+          <div class="sw-pill" onclick="showSection('poems')"><span>📜</span><b id="s1">0</b><small data-i18n="poems">Poems</small></div>
+          <div class="sw-pill" onclick="showSection('novels')"><span>📚</span><b id="s2">0</b><small data-i18n="novels">Novels</small></div>
+          <div class="sw-pill" onclick="showSection('thoughts')"><span>💭</span><b id="s3">0</b><small data-i18n="thoughts">Thoughts</small></div>
+          <div class="sw-pill" onclick="showSection('faq')"><span>🤲</span><b id="s4">0</b><small>FAQ</small></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- NAV -->
+<nav class="main-nav">
+  <button class="nav-btn active" data-sec="poems" onclick="showSection('poems')">
+    <div class="nb-glow"></div>
+    <span class="nb-icon">📜</span>
+    <span class="nb-en" data-i18n="poems">Poems</span>
+    <span class="nb-bn">কবিতা</span>
+    <span class="nb-ar">قصائد</span>
+    <div class="nb-bar"></div>
+  </button>
+  <button class="nav-btn" data-sec="novels" onclick="showSection('novels')">
+    <div class="nb-glow"></div>
+    <span class="nb-icon">📚</span>
+    <span class="nb-en" data-i18n="novels">Novels</span>
+    <span class="nb-bn">উপন্যাস</span>
+    <span class="nb-ar">روايات</span>
+    <div class="nb-bar"></div>
+  </button>
+  <button class="nav-btn" data-sec="thoughts" onclick="showSection('thoughts')">
+    <div class="nb-glow"></div>
+    <span class="nb-icon">🌙</span>
+    <span class="nb-en" data-i18n="thoughts">Thoughts</span>
+    <span class="nb-bn">চিন্তা</span>
+    <span class="nb-ar">أفكار</span>
+    <div class="nb-bar"></div>
+  </button>
+  <button class="nav-btn" data-sec="faq" onclick="showSection('faq')">
+    <div class="nb-glow"></div>
+    <span class="nb-icon">🤲</span>
+    <span class="nb-en">FAQ</span>
+    <span class="nb-bn">প্রশ্নোত্তর</span>
+    <span class="nb-ar">أسئلة</span>
+    <div class="nb-bar"></div>
+  </button>
+</nav>
+
+<!-- MAIN CONTENT -->
+<main class="main-content">
+
+  <section class="csec active" id="sec-poems">
+    <div class="csec-head"><span class="csh-icon">📜</span><span data-i18n="poems">Poems</span><span class="csh-divider">—</span><span class="csh-bn">কবিতা</span><span class="csh-divider">—</span><span class="csh-ar">قصائد</span></div>
+    <div class="cards-grid" id="grid-poems"></div>
+  </section>
+
+  <section class="csec" id="sec-novels">
+    <div class="csec-head"><span class="csh-icon">📚</span><span data-i18n="novels">Novels</span><span class="csh-divider">—</span><span class="csh-bn">উপন্যাস</span><span class="csh-divider">—</span><span class="csh-ar">روايات</span></div>
+    <div class="cards-grid" id="grid-novels"></div>
+  </section>
+
+  <section class="csec" id="sec-thoughts">
+    <div class="csec-head"><span class="csh-icon">🌙</span><span data-i18n="thoughts">Thoughts</span><span class="csh-divider">—</span><span class="csh-bn">চিন্তাভাবনা</span><span class="csh-divider">—</span><span class="csh-ar">أفكار</span></div>
+    <div class="cards-grid" id="grid-thoughts"></div>
+  </section>
+
+  <section class="csec" id="sec-faq">
+    <div class="csec-head"><span class="csh-icon">🤲</span>FAQ<span class="csh-divider">—</span><span class="csh-bn">প্রশ্নোত্তর</span><span class="csh-divider">—</span><span class="csh-ar">أسئلة</span></div>
+    <div class="faq-search-card glass-card">
+      <div class="faq-row">
+        <span class="faq-sparkle">✦</span>
+        <input id="faqInput" class="faq-inp" placeholder="Ask an Islamic question in any language…" onkeydown="if(event.key==='Enter')askFAQ()"/>
+        <button class="faq-ask-btn glass-btn" onclick="askFAQ()"><span data-i18n="ask">Ask</span><div class="btn-shine"></div></button>
+      </div>
+      <div class="faq-chips">
+        <span class="fc-lbl" data-i18n="tryAsking">Try:</span>
+        <button class="fc" onclick="setQ('What is Tawakkul in Islam?')">Tawakkul</button>
+        <button class="fc" onclick="setQ('Explain the 5 pillars of Islam')">5 Pillars</button>
+        <button class="fc" onclick="setQ('What does the Quran say about patience?')">Patience</button>
+        <button class="fc" onclick="setQ('What is the significance of Ramadan?')">Ramadan</button>
+        <button class="fc" onclick="setQ('ইসলামে সবরের গুরুত্ব কী?')">সবর</button>
+        <button class="fc" onclick="setQ('রমজানের ফজিলত কী?')">রমজান</button>
+      </div>
+      <div id="faq-answer-box"></div>
+    </div>
+    <div class="cards-grid" id="grid-faq"></div>
+  </section>
+
+</main>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+  <div class="footer-strip">سُبْحَانَ اللَّهِ · الْحَمْدُ لِلَّهِ · لَا إِلَهَ إِلَّا اللَّهُ · اللَّهُ أَكْبَرُ · سُبْحَانَ اللَّهِ · الْحَمْدُ لِلَّهِ · لَا إِلَهَ إِلَّا اللَّهُ · اللَّهُ أَكْبَرُ</div>
+  <div class="footer-copy">নূরুল হিকমাহ &nbsp;·&nbsp; Noor Al-Hikma &nbsp;·&nbsp; نور الحكمة &nbsp;—&nbsp; Islamic Literary Archive</div>
+</footer>
+
+<!-- SEARCH MODAL -->
+<div class="overlay" id="searchOv" onclick="closeSearch(event)">
+  <div class="search-modal glass-card" onclick="event.stopPropagation()">
+    <div class="sm-top">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input id="srchInput" class="sm-inp" placeholder="Search all content…" oninput="liveSearch(this.value)"/>
+      <button class="sm-x" onclick="closeSearch()">✕</button>
+    </div>
+    <div id="srchResults" class="srch-results"></div>
+  </div>
+</div>
+
+<!-- ADMIN GATE -->
+<div class="overlay" id="adminGate" onclick="closeAdminGate(event)">
+  <div class="gate-box glass-card" onclick="event.stopPropagation()">
+    <div class="gate-icon-big">🔐</div>
+    <h2 class="gate-title" data-i18n="adminAccess">Admin Access</h2>
+    <p class="gate-sub">Enter password to continue</p>
+    <div class="gate-row">
+      <input type="password" id="gatePass" class="gate-inp" placeholder="Password" onkeydown="if(event.key==='Enter')verifyPass()"/>
+      <button class="gate-go glass-btn" onclick="verifyPass()"><span>Enter</span><div class="btn-shine"></div></button>
+    </div>
+    <div class="gate-err" id="gateErr"></div>
+  </div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div class="overlay" id="adminOv" onclick="closeAdmin(event)">
+  <div class="admin-panel glass-card" onclick="event.stopPropagation()">
+    <div class="ap-hdr">
+      <span class="ap-title-text">⚙ Admin Panel <span class="ap-secured">SECURED</span></span>
+      <button class="modal-x" onclick="closeAdmin()">✕</button>
+    </div>
+    <div class="ap-tabs">
+      <button class="ap-t active" onclick="apTab('add',this)">➕ Add</button>
+      <button class="ap-t" onclick="apTab('manage',this)">📋 Manage</button>
+      <button class="ap-t" onclick="apTab('quickfaq',this)">🤲 FAQ</button>
+      <button class="ap-t" onclick="apTab('settings',this)">⚙ Settings</button>
+    </div>
+    <div class="ap-body" id="apBody">
+
+      <!-- ADD TAB -->
+      <div id="tab-add" class="ap-content active">
+        <div class="af">
+          <div class="af-row">
+            <div class="af-field"><label>Category <span class="req">*</span></label>
+              <select id="aCat" class="ainp"><option value="poems">📜 Poems</option><option value="novels">📚 Novels</option><option value="thoughts">🌙 Thoughts</option><option value="faq">🤲 FAQ</option></select>
+            </div>
+            <div class="af-field"><label>Color Theme</label>
+              <div class="cpicker">
+                <button class="cp active" data-c="gold" onclick="pickColor(this)">Gold</button>
+                <button class="cp" data-c="teal" onclick="pickColor(this)">Teal</button>
+                <button class="cp" data-c="rose" onclick="pickColor(this)">Rose</button>
+                <button class="cp" data-c="emerald" onclick="pickColor(this)">Emerald</button>
+                <button class="cp" data-c="violet" onclick="pickColor(this)">Violet</button>
+              </div>
+            </div>
+          </div>
+          <div class="af-field"><label>English Title <span class="req">*</span></label><input id="aTitleEn" class="ainp" placeholder="The Light of Patience"/></div>
+          <div class="af-row">
+            <div class="af-field"><label>বাংলা শিরোনাম</label><input id="aTitleBn" class="ainp" placeholder="ধৈর্যের আলো"/></div>
+            <div class="af-field"><label>العنوان العربي</label><input id="aTitleAr" class="ainp" dir="auto" placeholder="نور الصبر"/></div>
+          </div>
+          <div class="af-field"><label>English Excerpt</label><textarea id="aExcEn" class="ainp atx" placeholder="Brief description for the card…"></textarea></div>
+          <div class="af-field"><label>বাংলা সংক্ষেপ</label><textarea id="aExcBn" class="ainp atx" placeholder="কার্ডের জন্য সংক্ষিপ্ত বিবরণ…"></textarea></div>
+          <div class="af-field"><label>Full Content — English (HTML ok)</label><textarea id="aConEn" class="ainp atx tall" placeholder="Full article text…"></textarea></div>
+          <div class="af-field"><label>পূর্ণ বিষয়বস্তু — বাংলা</label><textarea id="aConBn" class="ainp atx tall" placeholder="বাংলায় সম্পূর্ণ লেখা…"></textarea></div>
+          <div class="af-field"><label>Arabic Quranic Verse (optional)</label><input id="aVerse" class="ainp" dir="auto" placeholder="إِنَّ مَعَ الْعُسْرِ يُسْرًا"/></div>
+          <button class="save-btn glass-btn" onclick="saveEntry()"><span>✦ Save Entry</span><div class="btn-shine"></div></button>
+        </div>
+      </div>
+
+      <!-- MANAGE TAB -->
+      <div id="tab-manage" class="ap-content">
+        <div class="mf-row">
+          <button class="mf active" onclick="filterManage('all',this)">All</button>
+          <button class="mf" onclick="filterManage('poems',this)">Poems</button>
+          <button class="mf" onclick="filterManage('novels',this)">Novels</button>
+          <button class="mf" onclick="filterManage('thoughts',this)">Thoughts</button>
+          <button class="mf" onclick="filterManage('faq',this)">FAQ</button>
+        </div>
+        <div id="manageList"></div>
+      </div>
+
+      <!-- QUICK FAQ TAB -->
+      <div id="tab-quickfaq" class="ap-content">
+        <p class="qfaq-intro">Add a handwritten Q&A directly to the FAQ section.</p>
+        <div class="af">
+          <div class="af-field"><label>Question — English <span class="req">*</span></label><input id="qfaqQEn" class="ainp" placeholder="What is Ihsan?"/></div>
+          <div class="af-field"><label>প্রশ্ন — বাংলা</label><input id="qfaqQBn" class="ainp" placeholder="ইহসান কী?"/></div>
+          <div class="af-field"><label>Answer — English <span class="req">*</span></label><textarea id="qfaqAEn" class="ainp atx tall" placeholder="Full answer in English…"></textarea></div>
+          <div class="af-field"><label>উত্তর — বাংলা</label><textarea id="qfaqABn" class="ainp atx tall" placeholder="বাংলায় উত্তর…"></textarea></div>
+          <div class="af-field"><label>Quranic Verse (Arabic, optional)</label><input id="qfaqV" class="ainp" dir="auto" placeholder="Optional Arabic verse"/></div>
+          <button class="save-btn glass-btn" onclick="saveFaqAdmin()"><span>✦ Add to FAQ</span><div class="btn-shine"></div></button>
+        </div>
+      </div>
+
+      <!-- SETTINGS TAB -->
+      <div id="tab-settings" class="ap-content">
+        <div class="af">
+          <div class="af-field"><label>Change Admin Password</label>
+            <div class="af-row">
+              <input type="password" id="setOld" class="ainp" placeholder="Current password"/>
+              <input type="password" id="setNew" class="ainp" placeholder="New password"/>
+            </div>
+          </div>
+          <div class="af-field"><label>Add Custom Ticker Verse</label><input id="setTicker" class="ainp" dir="auto" placeholder="New Arabic verse for ticker…"/></div>
+          <button class="save-btn glass-btn" onclick="saveSettings()"><span>✦ Save Settings</span><div class="btn-shine"></div></button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- VIEWER MODAL -->
+<div class="overlay" id="viewerOv" onclick="closeViewer(event)">
+  <div class="viewer-panel glass-card" onclick="event.stopPropagation()">
+    <div class="vp-hdr">
+      <div class="vp-title-area">
+        <div class="vp-title" id="vpTitle">—</div>
+        <div class="vp-subtitle" id="vpSub"></div>
+      </div>
+      <div class="vp-controls">
+        <div class="vp-lang-sw">
+          <button class="vls active" data-vl="en" onclick="vLang('en',this)">EN</button>
+          <button class="vls" data-vl="bn" onclick="vLang('bn',this)">বাং</button>
+        </div>
+        <button class="modal-x" onclick="closeViewer()">✕</button>
+      </div>
+    </div>
+    <div class="vp-body" id="vpBody"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast-el" id="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
