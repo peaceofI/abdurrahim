@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>এমসিকিউ পরীক্ষা - পদার্থবিজ্ঞান ও রসায়ন</title>
+
+    <!-- Firebase SDKs (Realtime Database) -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js">
+    </script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js">
+    </script>
+
+    <style>
+        /* ---------- স্টাইল ---------- */
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Nikosh', 'Bangla', sans-serif;
+        }
+        body {
+            background: #f0f4f8;
+            display: flex;
+            justify-content: center;
+            padding: 20px 10px;
+            margin: 0;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 960px;
+            width: 100%;
+            background: #ffffff;
+            padding: 25px 20px;
+            border-radius: 24px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.10);
+        }
+
+        /* ---------- হেডার ও টাইমার ---------- */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            border-bottom: 4px solid #4a90e2;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #1a3b5d;
+            margin: 0;
+            font-size: 24px;
+        }
+        .timer-box {
+            background: #1a3b5d;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 10px rgba(26, 59, 93, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .timer-box span {
+            background: #ff6b6b;
+            padding: 2px 12px;
+            border-radius: 30px;
+            color: #fff;
+        }
+        #timerDisplay {
+            min-width: 70px;
+            display: inline-block;
+            text-align: center;
+        }
+        .time-up {
+            background: #ff6b6b !important;
+            animation: blink 1s infinite;
+        }
+        @keyframes blink {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        h2 {
+            color: #1a3b5d;
+            border-bottom: 2px solid #dee5ed;
+            padding-bottom: 10px;
+            margin-top: 32px;
+            font-size: 22px;
+        }
+        hr {
+            border: none;
+            border-top: 2px solid #e9edf4;
+            margin: 30px 0 10px 0;
+        }
+
+        /* ---------- ছাত্র তথ্য ---------- */
+        .form-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            background: #f8faff;
+            padding: 22px 20px;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 25px;
+        }
+        .form-group input,
+        .form-group select {
+            flex: 1 1 160px;
+            padding: 14px 16px;
+            border: 2px solid #dce2ec;
+            border-radius: 10px;
+            font-size: 16px;
+            background: #fff;
+            transition: 0.2s;
+        }
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: #4a90e2;
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(74, 144, 226, 0.15);
+        }
+        .form-group input:disabled,
+        .form-group select:disabled {
+            background: #eef2f7;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        /* ---------- প্রশ্ন ব্লক ---------- */
+        .question-block {
+            background: #fafbff;
+            padding: 18px 22px 22px 22px;
+            margin: 22px 0;
+            border-radius: 16px;
+            border-left: 6px solid #4a90e2;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+        .question-block p {
+            font-weight: 700;
+            font-size: 17px;
+            margin: 0 0 16px 0;
+            color: #1e2a41;
+        }
+        .options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .options label {
+            flex: 1 0 calc(50% - 12px);
+            min-width: 170px;
+            background: #ffffff;
+            padding: 14px 18px;
+            border: 2px solid #e2e8f0;
+            border-radius: 14px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.15s ease;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+        }
+        .options label:hover:not(.disabled-option) {
+            background: #f0f6ff;
+            border-color: #4a90e2;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(74, 144, 226, 0.12);
+        }
+        .options input[type="radio"] {
+            width: 20px;
+            height: 20px;
+            accent-color: #4a90e2;
+            flex-shrink: 0;
+            margin: 0;
+            cursor: pointer;
+        }
+        .options label:has(input:checked) {
+            background: #e3efff;
+            border-color: #4a90e2;
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
+        }
+        .options label.disabled-option {
+            opacity: 0.6;
+            cursor: not-allowed;
+            pointer-events: none;
+            filter: grayscale(0.15);
+        }
+        .options label.disabled-option:hover {
+            transform: none;
+            box-shadow: none;
+            background: #fff;
+            border-color: #e2e8f0;
+        }
+
+        /* ---------- বাটন ---------- */
+        .btn-primary {
+            background: #4a90e2;
+            color: #fff;
+            border: none;
+            padding: 16px 40px;
+            font-size: 20px;
+            font-weight: 700;
+            border-radius: 60px;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 100%;
+            letter-spacing: 0.4px;
+            box-shadow: 0 6px 18px rgba(74, 144, 226, 0.30);
+            margin-top: 8px;
+        }
+        .btn-primary:hover:not(:disabled) {
+            background: #357abd;
+            transform: scale(1.01);
+        }
+        .btn-primary:disabled {
+            background: #a0b8d6;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+            opacity: 0.7;
+        }
+
+        .btn-secondary {
+            background: #28a745;
+            color: #fff;
+            border: none;
+            padding: 14px 32px;
+            font-size: 16px;
+            font-weight: 700;
+            border-radius: 60px;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 4px 14px rgba(40, 167, 69, 0.30);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-secondary:hover:not(:disabled) {
+            background: #218838;
+            transform: scale(1.02);
+        }
+        .btn-secondary:disabled {
+            background: #94b89e;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin: 18px 0 6px 0;
+            align-items: center;
+        }
+
+        /* ---------- মেসেজ ---------- */
+        #successMsg {
+            font-weight: 600;
+            margin: 16px 0 4px 0;
+            padding: 14px 18px;
+            border-radius: 12px;
+            text-align: center;
+            display: none;
+        }
+        #successMsg.show {
+            display: block;
+        }
+        .msg-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .msg-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .msg-locked {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffc107;
+        }
+        .msg-info {
+            background: #cce5ff;
+            color: #004085;
+            border: 1px solid #b8daff;
+        }
+
+        /* ---------- রেজাল্ট টেবিল ---------- */
+        .table-wrapper {
+            overflow-x: auto;
+            margin-top: 16px;
+            max-height: 520px;
+            overflow-y: auto;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        th {
+            background: #1a3b5d;
+            color: #fff;
+            padding: 14px 10px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            text-align: center;
+            white-space: nowrap;
+        }
+        td {
+            padding: 12px 10px;
+            border-bottom: 1px solid #e9ecef;
+            text-align: center;
+        }
+        tr:nth-child(even) {
+            background: #f8f9fc;
+        }
+        .score-badge {
+            background: #28a745;
+            color: #fff;
+            padding: 4px 14px;
+            border-radius: 40px;
+            font-weight: 700;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 18px 14px;
+            }
+            .options label {
+                flex: 1 0 100%;
+            }
+            .btn-primary,
+            .btn-secondary {
+                width: 100%;
+                justify-content: center;
+            }
+            .btn-group {
+                flex-direction: column;
+            }
+            .header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 10px;
+            }
+            .timer-box {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+
+        <!-- ========== হেডার + টাইমার ========== -->
+        <div class="header">
+            <h1>📝 অনলাইন এমসিকিউ পরীক্ষা</h1>
+            <div class="timer-box" id="timerBox">
+                ⏳ অবশিষ্ট সময়: <span id="timerDisplay">25:00</span>
+            </div>
+        </div>
+
+        <!-- ========== ছাত্র তথ্য ========== -->
+        <div class="form-group" id="studentInfoGroup">
+            <input type="text" id="studentName" placeholder="পূর্ণ নাম *" required />
+            <input type="number" id="studentRoll" placeholder="রোল নম্বর *" required />
+            <input type="text" id="studentClass" placeholder="শ্রেণি (যেমন: ১০, ১১-ক) *" required />
+            <select id="studentSubject">
+                <option value="">-- বিষয় নির্বাচন * --</option>
+                <option value="Physics">পদার্থবিজ্ঞান (গতি, ঘর্ষণ, আলো)</option>
+                <option value="Chemistry">রসায়ন (পরমাণুর গঠন)</option>
+            </select>
+        </div>
+
+        <!-- ========== প্রশ্নসমূহ (৩০টি) ========== -->
+        <div id="questionsContainer">
+
+            <!-- ===== পদার্থবিজ্ঞান (১-১৫) ===== -->
+            <!-- Q1 -->
+            <div class="question-block" data-q="1">
+                <p>১. গতির প্রথম সূত্রটি কী নামে পরিচিত?</p>
+                <div class="options">
+                    <label><input type="radio" name="q1" value="A" /> ক) জড়তার সূত্র</label>
+                    <label><input type="radio" name="q1" value="B" /> খ) ত্বরণের সূত্র</label>
+                    <label><input type="radio" name="q1" value="C" /> গ) ক্রিয়া-প্রতিক্রিয়ার সূত্র</label>
+                    <label><input type="radio" name="q1" value="D" /> ঘ) ভরবেগের সূত্র</label>
+                </div>
+            </div>
+            <!-- Q2 -->
+            <div class="question-block" data-q="2">
+                <p>২. বেগের পরিবর্তনের হারকে কী বলে?</p>
+                <div class="options">
+                    <label><input type="radio" name="q2" value="A" /> ক) সরণ</label>
+                    <label><input type="radio" name="q2" value="B" /> খ) ত্বরণ</label>
+                    <label><input type="radio" name="q2" value="C" /> গ) বল</label>
+                    <label><input type="radio" name="q2" value="D" /> ঘ) বেগ</label>
+                </div>
+            </div>
+            <!-- Q3 -->
+            <div class="question-block" data-q="3">
+                <p>৩. নিউটনের গতির দ্বিতীয় সূত্রের গাণিতিক রূপ কী?</p>
+                <div class="options">
+                    <label><input type="radio" name="q3" value="A" /> ক) F = m/a</label>
+                    <label><input type="radio" name="q3" value="B" /> খ) F = ma²</label>
+                    <label><input type="radio" name="q3" value="C" /> গ) F = ma</label>
+                    <label><input type="radio" name="q3" value="D" /> ঘ) F = m/v</label>
+                </div>
+            </div>
+            <!-- Q4 -->
+            <div class="question-block" data-q="4">
+                <p>৪. স্থির বস্তুর উপর ঘর্ষণ বলকে কী বলে?</p>
+                <div class="options">
+                    <label><input type="radio" name="q4" value="A" /> ক) স্থিত ঘর্ষণ</label>
+                    <label><input type="radio" name="q4" value="B" /> খ) গতিশীল ঘর্ষণ</label>
+                    <label><input type="radio" name="q4" value="C" /> গ) বায়ু ঘর্ষণ</label>
+                    <label><input type="radio" name="q4" value="D" /> ঘ) ঘূর্ণন ঘর্ষণ</label>
+                </div>
+            </div>
+            <!-- Q5 -->
+            <div class="question-block" data-q="5">
+                <p>৫. পিচ্ছিল পৃষ্ঠে ঘর্ষণ বল কেমন হয়?</p>
+                <div class="options">
+                    <label><input type="radio" name="q5" value="A" /> ক) বেশি হয়</label>
+                    <label><input type="radio" name="q5" value="B" /> খ) কম হয়</label>
+                    <label><input type="radio" name="q5" value="C" /> গ) অপরিবর্তিত থাকে</label>
+                    <label><input type="radio" name="q5" value="D" /> ঘ) শূন্য হয়</label>
+                </div>
+            </div>
+            <!-- Q6 -->
+            <div class="question-block" data-q="6">
+                <p>৬. আলোর প্রতিসরণের সময় কোন রাশিটি ধ্রুবক থাকে?</p>
+                <div class="options">
+                    <label><input type="radio" name="q6" value="A" /> ক) বেগ</label>
+                    <label><input type="radio" name="q6" value="B" /> খ) তরঙ্গদৈর্ঘ্য</label>
+                    <label><input type="radio" name="q6" value="C" /> গ) তীব্রতা</label>
+                    <label><input type="radio" name="q6" value="D" /> ঘ) কম্পাঙ্ক</label>
+                </div>
+            </div>
+            <!-- Q7 -->
+            <div class="question-block" data-q="7">
+                <p>৭. আলো ঘন মাধ্যম থেকে হালকা মাধ্যমে গেলে কী ঘটে?</p>
+                <div class="options">
+                    <label><input type="radio" name="q7" value="A" /> ক) মন্থর হয় এবং অভিলম্বের দিকে বেঁকে যায়</label>
+                    <label><input type="radio" name="q7" value="B" /> খ) দ্রুতগামী হয় এবং অভিলম্ব থেকে দূরে সরে যায়</label>
+                    <label><input type="radio" name="q7" value="C" /> গ) বেগ অপরিবর্তিত থাকে</label>
+                    <label><input type="radio" name="q7" value="D" /> ঘ) আলো শোষিত হয়</label>
+                </div>
+            </div>
+            <!-- Q8 -->
+            <div class="question-block" data-q="8">
+                <p>৮. পূর্ণ অভ্যন্তরীণ প্রতিফলনের শর্ত কোনটি?</p>
+                <div class="options">
+                    <label><input type="radio" name="q8" value="A" /> ক) আপতন কোণ < ক্রান্তিকোণ</label>
+                    <label><input type="radio" name="q8" value="B" /> খ) আলো হালকা মাধ্যম থেকে ঘন মাধ্যমে যায়</label>
+                    <label><input type="radio" name="q8" value="C" /> গ) আপতন কোণ > ক্রান্তিকোণ এবং আলো ঘন মাধ্যম থেকে হালকা মাধ্যমে যায়</label>
+                    <label><input type="radio" name="q8" value="D" /> ঘ) আপতন কোণ = ০°</label>
+                </div>
+            </div>
+            <!-- Q9 -->
+            <div class="question-block" data-q="9">
+                <p>৯. বস্তুর ভর দ্বিগুণ করলে গতিশক্তির কী পরিবর্তন হয়?</p>
+                <div class="options">
+                    <label><input type="radio" name="q9" value="A" /> ক) দ্বিগুণ হয়</label>
+                    <label><input type="radio" name="q9" value="B" /> খ) অর্ধেক হয়</label>
+                    <label><input type="radio" name="q9" value="C" /> গ) চারগুণ হয়</label>
+                    <label><input type="radio" name="q9" value="D" /> ঘ) অপরিবর্তিত থাকে</label>
+                </div>
+            </div>
+            <!-- Q10 -->
+            <div class="question-block" data-q="10">
+                <p>১০. S.I পদ্ধতিতে ঘর্ষণ বলের একক কী?</p>
+                <div class="options">
+                    <label><input type="radio" name="q10" value="A" /> ক) জুল</label>
+                    <label><input type="radio" name="q10" value="B" /> খ) নিউটন</label>
+                    <label><input type="radio" name="q10" value="C" /> গ) ওয়াট</label>
+                    <label><input type="radio" name="q10" value="D" /> ঘ) প্যাসকেল</label>
+                </div>
+            </div>
+            <!-- Q11 -->
+            <div class="question-block" data-q="11">
+                <p>১১. আলোর গতি সর্বোচ্চ কোথায়?</p>
+                <div class="options">
+                    <label><input type="radio" name="q11" value="A" /> ক) শূন্যস্থানে</label>
+                    <label><input type="radio" name="q11" value="B" /> খ) পানিতে</label>
+                    <label><input type="radio" name="q11" value="C" /> গ) কাঁচে</label>
+                    <label><input type="radio" name="q11" value="D" /> ঘ) বায়ুতে</label>
+                </div>
+            </div>
+            <!-- Q12 -->
+            <div class="question-block" data-q="12">
+                <p>১২. স্নেলের সূত্রের গাণিতিক রূপ কোনটি?</p>
+                <div class="options">
+                    <label><input type="radio" name="q12" value="A" /> ক) sin i × sin r = ধ্রুবক</label>
+                    <label><input type="radio" name="q12" value="B" /> খ) sin i / sin r = ধ্রুবক</label>
+                    <label><input type="radio" name="q12" value="C" /> গ) cos i / cos r = ধ্রুবক</label>
+                    <label><input type="radio" name="q12" value="D" /> ঘ) tan i / tan r = ধ্রুবক</label>
+                </div>
+            </div>
+            <!-- Q13 -->
+            <div class="question-block" data-q="13">
+                <p>১৩. বেগের S.I একক কী?</p>
+                <div class="options">
+                    <label><input type="radio" name="q13" value="A" /> ক) m/s</label>
+                    <label><input type="radio" name="q13" value="B" /> খ) m/s²</label>
+                    <label><input type="radio" name="q13" value="C" /> গ) N</label>
+                    <label><input type="radio" name="q13" value="D" /> ঘ) J</label>
+                </div>
+            </div>
+            <!-- Q14 -->
+            <div class="question-block" data-q="14">
+                <p>১৪. নিচের কোনটি ভেক্টর রাশি?</p>
+                <div class="options">
+                    <label><input type="radio" name="q14" value="A" /> ক) দূরত্ব</label>
+                    <label><input type="radio" name="q14" value="B" /> খ) দ্রুতি</label>
+                    <label><input type="radio" name="q14" value="C" /> গ) সরণ</label>
+                    <label><input type="radio" name="q14" value="D" /> ঘ) ভর</label>
+                </div>
+            </div>
+            <!-- Q15 -->
+            <div class="question-block" data-q="15">
+                <p>১৫. নিচের কোনটি স্কেলার রাশি?</p>
+                <div class="options">
+                    <label><input type="radio" name="q15" value="A" /> ক) বেগ</label>
+                    <label><input type="radio" name="q15" value="B" /> খ) দূরত্ব</label>
+                    <label><input type="radio" name="q15" value="C" /> গ) ত্বরণ</label>
+                    <label><input type="radio" name="q15" value="D" /> ঘ) বল</label>
+                </div>
+            </div>
+
+            <!-- ===== রসায়ন (১৬-৩০) ===== -->
+            <!-- Q16 -->
+            <div class="question-block" data-q="16">
+                <p>১৬. পরমাণুর কেন্দ্রকে কী বলে?</p>
+                <div class="options">
+                    <label><input type="radio" name="q16" value="A" /> ক) নিউক্লিয়াস</label>
+                    <label><input type="radio" name="q16" value="B" /> খ) ইলেকট্রন শেল</label>
+                    <label><input type="radio" name="q16" value="C" /> গ) প্রোটন</label>
+                    <label><input type="radio" name="q16" value="D" /> ঘ) নিউট্রন</label>
+                </div>
+            </div>
+            <!-- Q17 -->
+            <div class="question-block" data-q="17">
+                <p>১৭. ইলেকট্রনের আবিষ্কারক কে?</p>
+                <div class="options">
+                    <label><input type="radio" name="q17" value="A" /> ক) জে. জে. থমসন</label>
+                    <label><input type="radio" name="q17" value="B" /> খ) রাদারফোর্ড</label>
+                    <label><input type="radio" name="q17" value="C" /> গ) চ্যাডউইক</label>
+                    <label><input type="radio" name="q17" value="D" /> ঘ) বোর</label>
+                </div>
+            </div>
+            <!-- Q18 -->
+            <div class="question-block" data-q="18">
+                <p>১৮. পরমাণুর অধিকাংশ স্থান কী দিয়ে গঠিত?</p>
+                <div class="options">
+                    <label><input type="radio" name="q18" value="A" /> ক) প্রোটন</label>
+                    <label><input type="radio" name="q18" value="B" /> খ) নিউট্রন</label>
+                    <label><input type="radio" name="q18" value="C" /> গ) ইলেকট্রন</label>
+                    <label><input type="radio" name="q18" value="D" /> ঘ) শূন্যস্থান</label>
+                </div>
+            </div>
+            <!-- Q19 -->
+            <div class="question-block" data-q="19">
+                <p>১৯. প্রোটন ও নিউট্রনের সমষ্টিকে কী বলে?</p>
+                <div class="options">
+                    <label><input type="radio" name="q19" value="A" /> ক) পারমাণবিক সংখ্যা</label>
+                    <label><input type="radio" name="q19" value="B" /> খ) ভর সংখ্যা</label>
+                    <label><input type="radio" name="q19" value="C" /> গ) আয়নিক চার্জ</label>
+                    <label><input type="radio" name="q19" value="D" /> ঘ) ইলেকট্রন সংখ্যা</label>
+                </div>
+            </div>
+            <!-- Q20 -->
+            <div class="question-block" data-q="20">
+                <p>২০. রাদারফোর্ডের পরমাণু মডেলে ইলেকট্রন কোথায় ঘোরে?</p>
+                <div class="options">
+                    <label><input type="radio" name="q20" value="A" /> ক) নিউক্লিয়াসের ভেতরে</label>
+                    <label><input type="radio" name="q20" value="B" /> খ) নিউক্লিয়াসের চারদিকে</label>
+                    <label><input type="radio" name="q20" value="C" /> গ) স্থির অবস্থায়</label>
+                    <label><input type="radio" name="q20" value="D" /> ঘ) এলোমেলোভাবে</label>
+                </div>
+            </div>
+            <!-- Q21 -->
+            <div class="question-block" data-q="21">
+                <p>২১. Mg-24 পরমাণুতে নিউট্রন সংখ্যা কত? [Mg-এর পারমাণবিক সংখ্যা ১২]</p>
+                <div class="options">
+                    <label><input type="radio" name="q21" value="A" /> ক) ১২</label>
+                    <label><input type="radio" name="q21" value="B" /> খ) ২৪</label>
+                    <label><input type="radio" name="q21" value="C" /> গ) ৩৬</label>
+                    <label><input type="radio" name="q21" value="D" /> ঘ) ১০</label>
+                </div>
+            </div>
+            <!-- Q22 -->
+            <div class="question-block" data-q="22">
+                <p>২২. আইসোটোপের ক্ষেত্রে কী সমান?</p>
+                <div class="options">
+                    <label><input type="radio" name="q22" value="A" /> ক) পারমাণবিক সংখ্যা</label>
+                    <label><input type="radio" name="q22" value="B" /> খ) ভর সংখ্যা</label>
+                    <label><input type="radio" name="q22" value="C" /> গ) নিউট্রন সংখ্যা</label>
+                    <label><input type="radio" name="q22" value="D" /> ঘ) ইলেকট্রন সংখ্যা</label>
+                </div>
+            </div>
+            <!-- Q23 -->
+            <div class="question-block" data-q="23">
+                <p>২৩. ক্যাথোড রশ্মি কী দিয়ে গঠিত?</p>
+                <div class="options">
+                    <label><input type="radio" name="q23" value="A" /> ক) প্রোটন</label>
+                    <label><input type="radio" name="q23" value="B" /> খ) ইলেকট্রন</label>
+                    <label><input type="radio" name="q23" value="C" /> গ) নিউট্রন</label>
+                    <label><input type="radio" name="q23" value="D" /> ঘ) আলো</label>
+                </div>
+            </div>
+            <!-- Q24 -->
+            <div class="question-block" data-q="24">
+                <p>২৪. পরমাণুর সবচেয়ে হালকা কণা কোনটি?</p>
+                <div class="options">
+                    <label><input type="radio" name="q24" value="A" /> ক) ইলেকট্রন</label>
+                    <label><input type="radio" name="q24" value="B" /> খ) প্রোটন</label>
+                    <label><input type="radio" name="q24" value="C" /> গ) নিউট্রন</label>
+                    <label><input type="radio" name="q24" value="D" /> ঘ) পরমাণু</label>
+                </div>
+            </div>
+            <!-- Q25 -->
+            <div class="question-block" data-q="25">
+                <p>২৫. বোর মডেল অনুযায়ী শক্তিস্তরের সংখ্যা কত?</p>
+                <div class="options">
+                    <label><input type="radio" name="q25" value="A" /> ক) ৭</label>
+                    <label><input type="radio" name="q25" value="B" /> খ) ৮</label>
+                    <label><input type="radio" name="q25" value="C" /> গ) অসীম</label>
+                    <label><input type="radio" name="q25" value="D" /> ঘ) ২</label>
+                </div>
+            </div>
+            <!-- Q26 -->
+            <div class="question-block" data-q="26">
+                <p>২৬. নিউট্রনের আবিষ্কারক কে?</p>
+                <div class="options">
+                    <label><input type="radio" name="q26" value="A" /> ক) রাদারফোর্ড</label>
+                    <label><input type="radio" name="q26" value="B" /> খ) বোর</label>
+                    <label><input type="radio" name="q26" value="C" /> গ) চ্যাডউইক</label>
+                    <label><input type="radio" name="q26" value="D" /> ঘ) থমসন</label>
+                </div>
+            </div>
+            <!-- Q27 -->
+            <div class="question-block" data-q="27">
+                <p>২৭. প্রোটনের চার্জ কত?</p>
+                <div class="options">
+                    <label><input type="radio" name="q27" value="A" /> ক) +১.৬×১০⁻¹⁹ C</label>
+                    <label><input type="radio" name="q27" value="B" /> খ) -১.৬×১০⁻¹⁹ C</label>
+                    <label><input type="radio" name="q27" value="C" /> গ) ০</label>
+                    <label><input type="radio" name="q27" value="D" /> ঘ) ১ C</label>
+                </div>
+            </div>
+            <!-- Q28 -->
+            <div class="question-block" data-q="28">
+                <p>২৮. ইলেকট্রন যখন এক শক্তিস্তর থেকে অন্য শক্তিস্তরে যায়, তখন কী ঘটে?</p>
+                <div class="options">
+                    <label><input type="radio" name="q28" value="A" /> ক) শক্তি তৈরি হয়</label>
+                    <label><input type="radio" name="q28" value="B" /> খ) শক্তি শোষিত বা নির্গত হয়</label>
+                    <label><input type="radio" name="q28" value="C" /> গ) শক্তি ধ্বংস হয়</label>
+                    <label><input type="radio" name="q28" value="D" /> ঘ) কিছুই ঘটে না</label>
+                </div>
+            </div>
+            <!-- Q29 -->
+            <div class="question-block" data-q="29">
+                <p>২৯. অক্সিজেন পরমাণুতে (O) কয়টি ইলেকট্রন থাকে? [পারমাণবিক সংখ্যা ৮]</p>
+                <div class="options">
+                    <label><input type="radio" name="q29" value="A" /> ক) ৬</label>
+                    <label><input type="radio" name="q29" value="B" /> খ) ১০</label>
+                    <label><input type="radio" name="q29" value="C" /> গ) ১৬</label>
+                    <label><input type="radio" name="q29" value="D" /> ঘ) ৮</label>
+                </div>
+            </div>
+            <!-- Q30 -->
+            <div class="question-block" data-q="30">
+                <p>৩০. নিউক্লিয়াসে কোন কণাগুলো থাকে?</p>
+                <div class="options">
+                    <label><input type="radio" name="q30" value="A" /> ক) ইলেকট্রন ও প্রোটন</label>
+                    <label><input type="radio" name="q30" value="B" /> খ) প্রোটন ও নিউট্রন</label>
+                    <label><input type="radio" name="q30" value="C" /> গ) নিউট্রন ও ইলেকট্রন</label>
+                    <label><input type="radio" name="q30" value="D" /> ঘ) শুধু প্রোটন</label>
+                </div>
+            </div>
+
+        </div> <!-- কুইজ কন্টেইনার শেষ -->
+
+        <!-- ========== সাবমিট বাটন ========== -->
+        <button class="btn-primary" id="submitBtn" onclick="submitExam()">✅ পরীক্ষা জমা দিন</button>
+        <div id="successMsg"></div>
+
+        <hr />
+        <h2>📊 সমস্ত জমা দেওয়া ফলাফল (লাইভ)</h2>
+        <div class="table-wrapper" id="resultsTableWrapper">
+            <div id="resultsPlaceholder" style="padding:22px; text-align:center; color:#888;">
+                রিয়েলটাইম ডেটাবেজ থেকে ফলাফল লোড হচ্ছে…
+            </div>
+        </div>
+
+        <!-- ========== অ্যাডমিন এক্সপোর্ট ========== -->
+        <div class="btn-group">
+            <button class="btn-secondary" id="exportBtn" onclick="exportCSV()">
+                📥 সিএসভি ডাউনলোড করুন (শুধু অ্যাডমিন)
+            </button>
+            <span style="font-size:14px; color:#6c7a8a;">
+                পাসওয়ার্ড: EDC@2012
+            </span>
+        </div>
+
+    </div>
+
+    <script>
+        // ================================================================
+        //  🔥 আপনার ফায়ারবেস কনফিগারেশন (আগের মতোই)
+        // ================================================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyCcAP7C1rGJCdTkmdd9MI7AGlC3Te-sQGA",
+            authDomain: "hellomcq-7320c.firebaseapp.com",
+            databaseURL: "https://hellomcq-7320c-default-rtdb.firebaseio.com",
+            projectId: "hellomcq-7320c",
+            storageBucket: "hellomcq-7320c.firebasestorage.app",
+            messagingSenderId: "989437737583",
+            appId: "1:989437737583:web:1fa315c9e93a86f2706b9a",
+            measurementId: "G-4PE9M5XVZ0"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // ================================================================
+        //  📝 উত্তরপত্র (৩০টি প্রশ্নের সঠিক উত্তর)
+        // ================================================================
+        const answerKey = {
+            q1: 'A',
+            q2: 'B',
+            q3: 'C',
+            q4: 'A',
+            q5: 'B',
+            q6: 'D',
+            q7: 'B',
+            q8: 'C',
+            q9: 'A',
+            q10: 'B',
+            q11: 'A',
+            q12: 'B',
+            q13: 'A',
+            q14: 'C',
+            q15: 'B',
+            q16: 'A',
+            q17: 'A',
+            q18: 'D',
+            q19: 'B',
+            q20: 'B',
+            q21: 'A',
+            q22: 'A',
+            q23: 'B',
+            q24: 'A',
+            q25: 'C',
+            q26: 'C',
+            q27: 'A',
+            q28: 'B',
+            q29: 'D',
+            q30: 'B'
+        };
+
+        const TOTAL_Q = Object.keys(answerKey).length;
+        let formLocked = false;
+        let timerInterval = null;
+        let timeLeft = 1500; // ২৫ মিনিট = ১৫০০ সেকেন্ড
+
+        // ================================================================
+        //  ⏳ টাইমার ফাংশন
+        // ================================================================
+        function startTimer() {
+            const timerDisplay = document.getElementById('timerDisplay');
+            const timerBox = document.getElementById('timerBox');
+
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                timerDisplay.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+                // সময় শেষ হলে অটো-সাবমিট
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    timerDisplay.textContent = '০০:০০';
+                    timerBox.classList.add('time-up');
+                    // ফর্ম লক করে অটো সাবমিট
+                    if (!formLocked) {
+                        document.getElementById('successMsg').className = 'msg-error show';
+                        document.getElementById('successMsg').innerHTML =
+                        '⏰ সময় শেষ! আপনার উত্তরগুলি স্বয়ংক্রিয়ভাবে জমা দেওয়া হচ্ছে...';
+                        submitExam(); // অটো সাবমিট
+                    }
+                }
+            }, 1000);
+        }
+
+        // ================================================================
+        //  🔒 ফর্ম লক করা
+        // ================================================================
+        function lockForm(score, total) {
+            formLocked = true;
+            clearInterval(timerInterval); // টাইমার বন্ধ
+
+            document.querySelectorAll('input[type="radio"]').forEach(el => el.disabled = true);
+            document.querySelectorAll('.options label').forEach(el => el.classList.add('disabled-option'));
+
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.textContent = '🔒 পরীক্ষা জমা হয়েছে';
+
+            document.querySelectorAll('#studentInfoGroup input, #studentInfoGroup select')
+                .forEach(el => el.disabled = true);
+
+            if (score !== undefined && total !== undefined) {
+                const msg = document.getElementById('successMsg');
+                msg.className = 'msg-success show';
+                msg.innerHTML = `✅ আপনি <strong>${score}/${total}</strong> নম্বর পেয়েছেন। আপনার উত্তরগুলি লক করা হয়েছে।`;
+            }
+        }
+
+        // ================================================================
+        //  🔍 বিদ্যমান ছাত্র চেক করা (রোল + শ্রেণি)
+        // ================================================================
+        async function checkExistingStudent(roll, studentClass) {
+            try {
+                const snapshot = await database.ref('results')
+                    .orderByChild('roll')
+                    .equalTo(parseInt(roll))
+                    .once('value');
+
+                let exists = false;
+                snapshot.forEach((childSnapshot) => {
+                    const data = childSnapshot.val();
+                    if (data.class === studentClass) {
+                        exists = true;
+                    }
+                });
+                return exists;
+            } catch (err) {
+                console.error('Check existing error:', err);
+                return false;
+            }
+        }
+
+        // ================================================================
+        //  📤 পরীক্ষা জমা দেওয়ার ফাংশন
+        // ================================================================
+        async function submitExam() {
+            // যদি ইতিমধ্যে লক করা থাকে, তাহলে থামো
+            if (formLocked) {
+                const msg = document.getElementById('successMsg');
+                msg.className = 'msg-locked show';
+                msg.innerHTML = '⛔ আপনি ইতিমধ্যে পরীক্ষা জমা দিয়েছেন।';
+                return;
+            }
+
+            const name = document.getElementById('studentName').value.trim();
+            const roll = document.getElementById('studentRoll').value.trim();
+            const studentClass = document.getElementById('studentClass').value.trim();
+            const subject = document.getElementById('studentSubject').value;
+            const msgDiv = document.getElementById('successMsg');
+            const btn = document.getElementById('submitBtn');
+
+            // --- ভ্যালিডেশন ---
+            if (!name || !roll || !studentClass || !subject) {
+                msgDiv.className = 'msg-error show';
+                msgDiv.innerHTML = '❌ দয়া করে <strong>নাম, রোল নম্বর, শ্রেণি এবং বিষয়</strong> পূরণ করুন।';
+                return;
+            }
+
+            // বাটন ডিজেবল (ডাবল ক্লিক ঠেকাতে)
+            btn.disabled = true;
+            btn.textContent = '⏳ জমা দেওয়া হচ্ছে…';
+
+            // --- ডুপ্লিকেট চেক ---
+            const exists = await checkExistingStudent(roll, studentClass);
+            if (exists) {
+                msgDiv.className = 'msg-error show';
+                msgDiv.innerHTML = '🚫 <strong>আপনি ইতিমধ্যে পরীক্ষা দিয়েছেন!</strong>';
+                btn.disabled = false;
+                btn.textContent = '✅ পরীক্ষা জমা দিন';
+                lockForm(); // লক করে দিন
+                return;
+            }
+
+            // --- স্কোর ক্যালকুলেশন ---
+            let score = 0;
+            let userAnswers = {};
+
+            for (let i = 1; i <= TOTAL_Q; i++) {
+                const qName = `q${i}`;
+                const selected = document.querySelector(`input[name="${qName}"]:checked`);
+                userAnswers[qName] = selected ? selected.value : null;
+                if (selected && selected.value === answerKey[qName]) {
+                    score++;
+                }
+            }
+
+            // --- ডেটা তৈরি ---
+            const studentData = {
+                name: name,
+                roll: parseInt(roll),
+                class: studentClass,
+                subject: subject,
+                score: score,
+                total: TOTAL_Q,
+                answers: userAnswers,
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            };
+
+            try {
+                await database.ref('results').push().set(studentData);
+
+                msgDiv.className = 'msg-success show';
+                msgDiv.innerHTML = `✅ <strong>অভিনন্দন!</strong> ${name} পেয়েছেন ${score}/${TOTAL_Q} নম্বর।`;
+
+                // ফর্ম লক করে দিন (টাইমার বন্ধ হবে)
+                lockForm(score, TOTAL_Q);
+
+            } catch (error) {
+                console.error('Submit error:', error);
+                msgDiv.className = 'msg-error show';
+                msgDiv.innerHTML = `❌ জমা দিতে সমস্যা: ${error.message}`;
+                btn.disabled = false;
+                btn.textContent = '✅ পরীক্ষা জমা দিন';
+            }
+        }
+
+        // ================================================================
+        //  📊 ফলাফল লোড ও দেখানো (রিয়েলটাইম)
+        // ================================================================
+        async function fetchAndDisplayResults() {
+            const wrapper = document.getElementById('resultsTableWrapper');
+
+            try {
+                const snapshot = await database.ref('results')
+                    .orderByChild('timestamp')
+                    .once('value');
+
+                if (!snapshot.exists()) {
+                    wrapper.innerHTML =
+                        `<div style="padding:22px; text-align:center; color:#888;">এখনো কোনো ফলাফল জমা পড়েনি।</div>`;
+                    return;
+                }
+
+                const results = [];
+                snapshot.forEach((childSnapshot) => {
+                    const data = childSnapshot.val();
+                    results.push({ id: childSnapshot.key, ...data });
+                });
+
+                results.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+                let html = `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>নাম</th>
+                                <th>রোল</th>
+                                <th>শ্রেণি</th>
+                                <th>বিষয়</th>
+                                <th>নম্বর</th>
+                                <th>সময়</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+
+                let count = 1;
+                results.forEach((d) => {
+                    let timeStr = 'এখনই';
+                    if (d.timestamp) {
+                        const date = new Date(d.timestamp);
+                        timeStr = date.toLocaleString('bn-BD');
+                    }
+                    html += `
+                        <tr>
+                            <td>${count}</td>
+                            <td><strong>${d.name || 'N/A'}</strong></td>
+                            <td>${d.roll ?? 'N/A'}</td>
+                            <td>${d.class || 'N/A'}</td>
+                            <td>${d.subject || 'N/A'}</td>
+                            <td><span class="score-badge">${d.score ?? 0} / ${d.total ?? 0}</span></td>
+                            <td style="font-size:12px;">${timeStr}</td>
+                        </tr>
+                    `;
+                    count++;
+                });
+
+                html += `</tbody></table>`;
+                wrapper.innerHTML = html;
+
+            } catch (err) {
+                wrapper.innerHTML = `<div style="color:#b02a37;padding:16px;">লোড করতে সমস্যা: ${err.message}</div>`;
+            }
+        }
+
+        // ================================================================
+        //  📥 সিএসভি এক্সপোর্ট (শুধু অ্যাডমিন)
+        // ================================================================
+        async function exportCSV() {
+            const password = prompt("🔐 অ্যাডমিন পাসওয়ার্ড দিন:");
+            if (password === null) return;
+
+            if (password !== "EDC@2012") {
+                const msgDiv = document.getElementById('successMsg');
+                msgDiv.className = 'msg-error show';
+                msgDiv.innerHTML = '🔒 <strong>অ্যাক্সেস অস্বীকৃত।</strong> পাসওয়ার্ড ভুল।';
+                return;
+            }
+
+            const exportBtn = document.getElementById('exportBtn');
+            const msgDiv = document.getElementById('successMsg');
+
+            exportBtn.disabled = true;
+            exportBtn.textContent = '⏳ সিএসভি তৈরি হচ্ছে…';
+            msgDiv.className = 'msg-info show';
+            msgDiv.innerHTML = '📤 অ্যাডমিন যাচাইকৃত। সিএসভি ফাইল তৈরি করা হচ্ছে…';
+
+            try {
+                const snapshot = await database.ref('results')
+                    .orderByChild('timestamp')
+                    .once('value');
+
+                if (!snapshot.exists()) {
+                    msgDiv.className = 'msg-error show';
+                    msgDiv.innerHTML = '⚠️ এক্সপোর্ট করার মতো কোনো ফলাফল নেই।';
+                    exportBtn.disabled = false;
+                    exportBtn.textContent = '📥 সিএসভি ডাউনলোড করুন (শুধু অ্যাডমিন)';
+                    return;
+                }
+
+                const rows = ['নাম,রোল,শ্রেণি,বিষয়,নম্বর,মোট,জমা দেওয়ার সময়'];
+
+                snapshot.forEach((childSnapshot) => {
+                    const d = childSnapshot.val();
+                    let timeStr = '';
+                    if (d.timestamp) {
+                        const date = new Date(d.timestamp);
+                        timeStr = date.toLocaleString('bn-BD');
+                    }
+                    const name = (d.name || 'N/A').replace(/,/g, '');
+                    const cls = (d.class || 'N/A').replace(/,/g, '');
+                    rows.push(
+                        `${name},${d.roll ?? 0},${cls},${d.subject || 'N/A'},${d.score ?? 0},${d.total ?? 0},"${timeStr}"`
+                    );
+                });
+
+                const csvString = rows.join('\n');
+                const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                const now = new Date();
+                const datePart = now.toISOString().slice(0, 10);
+                const timePart = now.toTimeString().slice(0, 8).replace(/:/g, '-');
+                link.download = `ফলাফল_${datePart}_${timePart}.csv`;
+
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+
+                msgDiv.className = 'msg-success show';
+                msgDiv.innerHTML = `✅ <strong>সিএসভি ডাউনলোড সফল!</strong> ${rows.length - 1} টি রেকর্ড এক্সপোর্ট করা হয়েছে।`;
+
+                exportBtn.disabled = false;
+                exportBtn.textContent = '📥 সিএসভি ডাউনলোড করুন (শুধু অ্যাডমিন)';
+
+            } catch (error) {
+                console.error('Export error:', error);
+                msgDiv.className = 'msg-error show';
+                msgDiv.innerHTML = `❌ এক্সপোর্ট ব্যর্থ: ${error.message}`;
+                exportBtn.disabled = false;
+                exportBtn.textContent = '📥 সিএসভি ডাউনলোড করুন (শুধু অ্যাডমিন)';
+            }
+        }
+
+        // ================================================================
+        //  ▶️ পেজ লোড হলে যা হবে
+        // ================================================================
+        window.onload = function() {
+            // টাইমার শুরু
+            startTimer();
+
+            // প্রথমবার ফলাফল লোড
+            fetchAndDisplayResults();
+
+            // রিয়েলটাইম লিসেনার (কেউ জমা দিলেই টেবিল আপডেট)
+            database.ref('results').on('value', function(snapshot) {
+                fetchAndDisplayResults();
+            });
+        };
+    </script>
+
+</body>
+</html>
